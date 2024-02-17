@@ -34,9 +34,12 @@
 
 #include <iostream>
 #include <chrono>
+#include <thread>
+#include <vector>
+
 
 //Matrix sizes
-#define MX	2000
+#define MX	20
 
 //all the matrix
 long int **matrix1, **matrix2, **matrix;
@@ -71,8 +74,21 @@ void multiply(){
 		}
 	}	
 }
+
+void multiply_parallel(int id, int n_th){
+	long int start=id*(MX/n_th);
+	long int end=(id+1)*(MX/n_th);
+	for(long int i=start; i<end; i++){
+		for(long int j=0; j<MX; j++){
+			for(long int k=0; k<MX; k++){
+				matrix[i][j] += (matrix1[i][k] * matrix2[k][j]);
+			}
+		}
+	}	
+}
 //main function
 int main(int argc, char const *argv[]){
+	const int N = atoi(argv[1]);
 
 	matrix = new long int*[MX];  
 	matrix1 = new long int*[MX];
@@ -92,7 +108,23 @@ int main(int argc, char const *argv[]){
 	multiply();
 	auto t_end = std::chrono::high_resolution_clock::now();
 	std::cout << "DotProduct Execution time(s): " << std::chrono::duration<double>(t_end-t_start).count() << std::endl;
+	printMatrix(matrix);
+	val();
+
+	t_start = std::chrono::high_resolution_clock::now();
+	//parallel matrix multiplication algorithm call
+	std::vector<std::thread> th;
+	for(size_t i = 0; i < N; i++){
+       th.push_back(std::thread(multiply_parallel, i,N));
+    }
+    for(auto &t : th)
+        t.join();
+	t_end = std::chrono::high_resolution_clock::now();
+	std::cout << "Parallel DotProduct Execution time(s): " << std::chrono::duration<double>(t_end-t_start).count() << std::endl;
+	printMatrix(matrix);
 	
+
+
 	printf("SIZE= %d\n", MX);
 	//printing the resultant matrix (you may comment when bigger sizes will be set-up)
 	//printMatrix(matrix);
