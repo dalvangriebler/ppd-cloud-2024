@@ -36,10 +36,10 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-
+#include <mutex>
 
 //Matrix sizes
-#define MX	20
+#define MX	2000
 
 //all the matrix
 long int **matrix1, **matrix2, **matrix;
@@ -78,6 +78,11 @@ void multiply(){
 void multiply_parallel(int id, int n_th){
 	long int start=id*(MX/n_th);
 	long int end=(id+1)*(MX/n_th);
+	if (n_th-1 == id){
+		if (MX % n_th !=0){
+			end=((id+1)*(MX/n_th))+(MX % n_th);
+		}
+	}	
 	for(long int i=start; i<end; i++){
 		for(long int j=0; j<MX; j++){
 			for(long int k=0; k<MX; k++){
@@ -86,6 +91,26 @@ void multiply_parallel(int id, int n_th){
 		}
 	}	
 }
+long int iterator=MX;
+std::mutex m;
+void multiply_parallel_dynamic(int id, int n_th){
+	while(iterator>0){
+		m.lock();
+			iterator--;
+			long int i=iterator;
+		m.unlock();
+		if (i <0) return;
+		//for(long int i=start; i<end; i++){
+			for(long int j=0; j<MX; j++){
+				for(long int k=0; k<MX; k++){
+					matrix[i][j] += (matrix1[i][k] * matrix2[k][j]);
+				}
+			}
+		//}	
+	}
+}
+
+
 //main function
 int main(int argc, char const *argv[]){
 	const int N = atoi(argv[1]);
@@ -108,7 +133,7 @@ int main(int argc, char const *argv[]){
 	multiply();
 	auto t_end = std::chrono::high_resolution_clock::now();
 	std::cout << "DotProduct Execution time(s): " << std::chrono::duration<double>(t_end-t_start).count() << std::endl;
-	printMatrix(matrix);
+	//printMatrix(matrix);
 	val();
 
 	t_start = std::chrono::high_resolution_clock::now();
@@ -121,9 +146,19 @@ int main(int argc, char const *argv[]){
         t.join();
 	t_end = std::chrono::high_resolution_clock::now();
 	std::cout << "Parallel DotProduct Execution time(s): " << std::chrono::duration<double>(t_end-t_start).count() << std::endl;
-	printMatrix(matrix);
+	//printMatrix(matrix);
 	
-
+	val();
+	t_start = std::chrono::high_resolution_clock::now();
+	std::vector<std::thread> thd;
+	for(size_t i = 0; i < N; i++){
+       thd.push_back(std::thread(multiply_parallel_dynamic, i,N));
+    }
+    for(auto &t : thd)
+        t.join();
+	t_end = std::chrono::high_resolution_clock::now();
+	std::cout << "Parallel Dynamic DotProduct Execution time(s): " << std::chrono::duration<double>(t_end-t_start).count() << std::endl;
+	//printMatrix(matrix);
 
 	printf("SIZE= %d\n", MX);
 	//printing the resultant matrix (you may comment when bigger sizes will be set-up)
