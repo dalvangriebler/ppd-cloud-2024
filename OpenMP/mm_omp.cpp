@@ -28,7 +28,7 @@
  *  Description: This is a simple parallel matrix multiplication with C++ threads. 
  *  File Name: mm_threads.cpp
  *  Version: 1.1 (23/02/2024)
- *  Compilation Command: g++ -Wall -std=c++1y -O3 mm_threads.cpp -o exe -pthread 
+ *  Compilation Command: g++ -Wall -std=c++1y -O3 mm_omp.cpp -o exe -fopenmp 
  ****************************************************************************
 */
 
