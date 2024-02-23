@@ -39,6 +39,7 @@
 #include <thread>
 #include <tuple>
 #include <functional>
+#include <omp.h>
 
 //all the matrix
 long int **matrix1, **matrix2, **matrix;
@@ -64,8 +65,7 @@ void printMatrix(long int **matrix, int dim){
 	printf("\n");				
 }
 void multiply_parallel(int dim, int nw){
-	#pragma omp parallel for 
-	//schedule(runtime) collapse(2)
+	#pragma omp parallel for schedule(static)
 	for(long int i=0; i<dim; i++){
 		for(long int j=0; j<dim; j++){
 			for(long int k=0; k<dim; k++){
@@ -106,7 +106,13 @@ int main(int argc, char const *argv[]){
 	
 	//assigning fixed values to the matrix			
 	val(dim);
-
+	#pragma omp parallel
+	{
+	  #pragma omp master
+		{
+		 std::cout << "Total num of threads:" << omp_get_num_threads() << std::endl;
+		}
+	}
 	auto t_start = std::chrono::high_resolution_clock::now();
 	//matrix multiplication algorithm call
 	if(nw == 0){
