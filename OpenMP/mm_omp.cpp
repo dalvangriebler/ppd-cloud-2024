@@ -27,8 +27,8 @@
  *  Copyright: GNU General Public License
  *  Description: This is a simple parallel matrix multiplication with C++ threads. 
  *  File Name: mm_threads.cpp
- *  Version: 1.0 (29/05/2018)
- *  Compilation Command: g++ -Wall -std=c++1y -O3 mm_threads.cpp -o exe -pthread
+ *  Version: 1.1 (23/02/2024)
+ *  Compilation Command: g++ -Wall -std=c++1y -O3 mm_threads.cpp -o exe -pthread 
  ****************************************************************************
 */
 
@@ -64,7 +64,8 @@ void printMatrix(long int **matrix, int dim){
 	printf("\n");				
 }
 void multiply_parallel(int dim, int nw){
-	#pragma omp parallel for schedule(runtime) collapse(2)
+	#pragma omp parallel for 
+	//schedule(runtime) collapse(2)
 	for(long int i=0; i<dim; i++){
 		for(long int j=0; j<dim; j++){
 			for(long int k=0; k<dim; k++){
